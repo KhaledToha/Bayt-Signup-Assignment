@@ -1,5 +1,8 @@
 const Joi = require('joi');
 
+const eighteenYearsAgo = new Date();
+eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+
 exports.individualSchema = Joi.object({
 
   firstName: Joi.string().required().min(3).max(15),
@@ -10,7 +13,7 @@ exports.individualSchema = Joi.object({
   confirmPassword: Joi.ref('password'),
   gender: Joi.string().valid('female', 'male'),
   phone: Joi.string().pattern(/^\+?[0-9]+$/),
-  date: Joi.date().required(),
+  date: Joi.date().required().max(eighteenYearsAgo.toISOString().split('T')[0]),
   address: Joi.string().required(),
 });
 
