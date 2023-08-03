@@ -1,10 +1,19 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import businessSchema from '../../helper/businessSchema';
-import { Autocomplete, Box, Button, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import InputBox from '../InputBox';
 import countries from '../../helper/countries';
+import axios from 'axios';
+import { ErrorAlert } from '../ErrorAlert';
 
 const BusinessSignup = () => {
+  const [openError, setOpenError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigator = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -16,7 +25,20 @@ const BusinessSignup = () => {
       address: '',
     },
     validationSchema: businessSchema,
-    onSubmit: (values) => console.log(values),
+    onSubmit: (values) => {
+      setLoading(true);
+      axios
+        .post('/api/signup/business', values)
+        .then(() => {
+          setLoading(false);
+          navigator('/welcome');
+        })
+        .catch((err) => {
+          setLoading(false);
+          setOpenError(true);
+          setErrorMessage(err.response.data.message);
+        });
+    },
   });
 
   return (
@@ -27,6 +49,11 @@ const BusinessSignup = () => {
         justifyContent="space-around"
         height="60vh"
       >
+        <ErrorAlert
+          open={openError}
+          message={errorMessage}
+          setOpen={setOpenError}
+        />
         <InputBox
           label="Name"
           success={formik.touched.name && !formik.errors.name}
@@ -224,7 +251,7 @@ const BusinessSignup = () => {
           type="submit"
           sx={{ marginTop: 2 }}
         >
-          Sign up
+          {loading ? <CircularProgress/> : <Typography>Sign Up</Typography>}
         </Button>
       </Box>
     </form>

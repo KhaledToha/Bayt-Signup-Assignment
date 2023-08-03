@@ -1,8 +1,10 @@
 import { useFormik } from 'formik';
+import { useNavigate } from 'react-router-dom';
 import InputBox from '../InputBox';
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -17,8 +19,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import individualSchema from '../../helper/individualSchema';
+import axios from 'axios';
+import { useState } from 'react';
+import { ErrorAlert } from '../ErrorAlert';
 
 const IndividualSignup = () => {
+  const [openError, setOpenError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigator = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       firstName: '',
@@ -32,7 +42,20 @@ const IndividualSignup = () => {
       address: '',
     },
     validationSchema: individualSchema,
-    onSubmit: (values) => console.log(values),
+    onSubmit: (values) => {
+      setLoading(true);
+      axios
+        .post('/api/signup/user', values)
+        .then(() => {
+          setLoading(false);
+          navigator('/welcome');
+        })
+        .catch((err) => {
+          setLoading(false);
+          setOpenError(true);
+          setErrorMessage(err.response.data.message);
+        });
+    },
   });
 
   return (
@@ -43,6 +66,11 @@ const IndividualSignup = () => {
         justifyContent="space-around"
         height="85vh"
       >
+        <ErrorAlert
+          open={openError}
+          message={errorMessage}
+          setOpen={setOpenError}
+        />
         <InputBox
           label="First Name"
           success={formik.touched.firstName && !formik.errors.firstName}
@@ -259,17 +287,15 @@ const IndividualSignup = () => {
           />
         </InputBox>
 
-        
-
         <Button
-        disabled={!formik.isValid}
+          disabled={!formik.isValid}
           color="primary"
           variant="contained"
           fullWidth
           type="submit"
           sx={{ marginTop: 2 }}
         >
-          Sign up
+          {loading ? <CircularProgress/> : <Typography>Sign Up</Typography>}
         </Button>
       </Box>
     </form>

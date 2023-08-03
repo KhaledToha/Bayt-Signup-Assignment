@@ -4,7 +4,7 @@ const businessSchema = yup.object({
     name: yup
       .string('Enter your first name')
       .min(3, 'First name should be of minimum 3 characters')
-      .max(15, 'First name should be less that 15 characters')
+      .max(15, 'First name should be less that 50 characters')
       .required('First name is required'),
   
   
